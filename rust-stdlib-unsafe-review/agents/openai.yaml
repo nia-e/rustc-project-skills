@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rust stdlib unsafe review"
+  short_description: "Private stdlib soundness and safety-proof review"
+  default_prompt: "Use $rust-stdlib-unsafe-review to privately review this stdlib code and identify the established findings, proof gaps, and coverage limits."

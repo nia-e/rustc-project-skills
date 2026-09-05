@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rust stdlib unsoundness triage"
+  short_description: "Private severity, exposure, and repair triage"
+  default_prompt: "Use $rust-stdlib-unsoundness-response to privately assess this finding, separate evidence from uncertainty, and recommend human follow-up."

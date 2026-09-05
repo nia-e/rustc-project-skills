@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rust Libraries Review Queue"
+  short_description: "Find actionable Rust libraries work and estimate effort"
+  default_prompt: "Use $rust-libs-review-queue to privately assess what currently needs my attention in Rust libraries work and suggest a queue by urgency and effort."

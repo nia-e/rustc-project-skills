@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prose Review"
+  short_description: "Private editorial review for coherent, purposeful prose"
+  default_prompt: "Use $prose-review to privately assess this text for its intended reader, focusing on coherence and whether its qualifications earn their place."

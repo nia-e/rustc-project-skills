@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rust Libs meetings"
+  short_description: "Select sync FCPs and trace meeting follow-through"
+  default_prompt: "Use $rust-libs-meeting to privately assess discussion candidates or follow-through for this Rust Libs meeting."

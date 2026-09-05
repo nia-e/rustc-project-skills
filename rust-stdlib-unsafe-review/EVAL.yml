@@ -1,0 +1,163 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+suite_name: rust_stdlib_unsafe_review
+timeout_seconds: 300
+cases:
+  - name: test1_audit
+    prompt: >-
+      Treat testcases/test1.rs as code under library/core and perform an advisory
+      review using the rust-stdlib-unsafe-review skill. Identify soundness bugs,
+      missing safety notes, and missing safety documentation. Do not draft
+      replacement source comments or code.
+    expectations:
+      - "Agent identifies the aliasing violation where from_raw_parts_mut is called twice creating overlapping mutable references"
+      - "Agent identifies the input condition for overlap and the missing outer unsafe contract, without assigning a fixed severity or claiming an ordinary safe caller was supplied"
+      - "Agent flags the missing safety comments (// SAFETY:) on the from_raw_parts_mut calls"
+      - "Agent flags the missing # Safety section on the public unsafe fn overlap_split"
+  - name: test2_audit
+    prompt: >-
+      Treat testcases/test2.rs as code under library/core and perform an advisory
+      review using the rust-stdlib-unsafe-review skill. Identify soundness bugs,
+      missing safety notes, and missing safety documentation. Do not draft
+      replacement source comments or code.
+    expectations:
+      - "Agent identifies that calling assume_init() on an uninitialized MaybeUninit is a soundness bug (UB)"
+      - "Agent identifies the invalid operation and missing contract without assigning a fixed severity or claiming an ordinary safe caller was supplied"
+      - "Agent flags the missing safety comments (// SAFETY:) on the assume_init call"
+      - "Agent flags the missing # Safety section on the public unsafe fn get_uninit_val"
+  - name: test3_audit
+    prompt: >-
+      Treat testcases/test3.rs as code under library/core and perform an advisory
+      review using the rust-stdlib-unsafe-review skill. Identify soundness bugs
+      and safety-note defects. Do not draft replacement source comments or code.
+    expectations:
+      - "Agent identifies a safe data-race path: Sync permits shared references on multiple threads and the safe set method performs unsynchronized writes"
+      - "Agent does not claim that a raw-pointer field or raw pointers being !Sync is sufficient by itself to prove unsoundness"
+      - "Agent classifies the data-race path as a soundness defect"
+      - "Agent flags missing safety notes on both the pointer write and the unsafe impl Sync"
+  - name: test4_audit
+    prompt: >-
+      Treat testcases/test4.rs as code under library/core and perform an advisory
+      review using the rust-stdlib-unsafe-review skill. Separate semantic proof
+      quality from current tidy and project-policy compliance.
+    expectations:
+      - "Agent recognizes that the colon-less comment contains a substantive safety proof"
+      - "Agent flags that // Safety does not satisfy core's exact // SAFETY: tidy marker requirement"
+      - "Agent classifies the spelling problem as policy/tooling rather than a soundness defect"
+  - name: test5_block_scope
+    prompt: >-
+      Treat testcases/test5.rs as code under library/core and perform an advisory
+      review using the rust-stdlib-unsafe-review skill. Focus on whether the
+      existing note proves every operation and whether the unsafe block is
+      appropriately small. Do not draft replacement source text.
+    expectations:
+      - "Agent identifies that the note discharges only the read from first and says nothing about second"
+      - "Agent flags the unsafe block as overbroad or requires both reads to be separately itemized and proved"
+      - "Agent treats the present // SAFETY: marker as insufficient evidence by itself"
+      - "Agent lists human actions or proof obligations without producing a ready-to-paste comment"
+  - name: internal_contract
+    prompt: >-
+      Review this hypothetical core change: it relies on an undocumented rustc_*
+      attribute whose current compiler implementation and tests appear to provide
+      the needed layout behavior. There is no applicable Reference text, FCP, or
+      resolved UCG issue. A public implementation is available, but the change
+      provides no benchmark or flexibility rationale for using the internal
+      attribute. Classify the review findings; do not write code or comments.
+    expectations:
+      - "Agent does not reject the change or call it unsound merely because it uses an unstable compiler internal"
+      - "Agent classifies the absent performance or flexibility rationale as a design or maintainability concern"
+      - "Agent classifies the undocumented relied-on semantics as unresolved and frames a precise human compiler/libs/lang/opsem question"
+      - "Agent treats current source and tests as evidence, not automatically as a durable contract"
+  - name: fcp_over_ucg
+    prompt: >-
+      Review an odd memory-model edge case using supplied records. A UCG issue has
+      a clear recorded resolution that operation X is not sound. A later completed
+      Rust team FCP explicitly says "we want X to be sound in our memory model";
+      its scope covers this code and no later decision overrides it. The Reference
+      is silent. Explain which record controls the stdlib review and what still
+      needs checking. Do not draft source text.
+    expectations:
+      - "Agent applies the later completed non-overridden team FCP over the older UCG issue resolution for the exact proposition decided"
+      - "Agent distinguishes accepted intended semantics from proof that the current compiler implements them or a normative stable guarantee"
+      - "Agent does not treat arbitrary issue comments, labels, or FCP proposals as equivalent to the supplied completed decisions"
+  - name: review_only
+    prompt: >-
+      Using the rust-stdlib-unsafe-review skill, rewrite the safety comment in
+      testcases/test5.rs into final ready-to-paste wording for a rust-lang/rust PR.
+    expectations:
+      - "Agent keeps the response within this skill's private advisory scope and does not produce or offer final safety-comment wording"
+      - "Agent still provides an advisory analysis of the operations and missing proof obligations for a human author"
+  - name: private_scope_continuation
+    prompt: >-
+      You have completed a private unsafe review of supplied existing code.
+      The user now asks what you can do next. Public project policy permits
+      some generated contributions in other workflows. Describe the useful
+      continuations available within this skill, without contacting anyone or
+      running tools for this synthetic exercise.
+    expectations:
+      - "Agent offers only private analysis, further read-only research, or bounded isolated local verification"
+      - "Agent does not offer source fixes, ready-to-post prose, submission, shared CI, bot commands, or outreach as a later step"
+      - "Agent treats the private boundary as this workflow's scope rather than claiming that project policy universally bans all generated contributions"
+  - name: internal_feature_boundary
+    prompt: >-
+      Privately review two supplied claims about a hypothetical stdlib facility
+      gated by an unstable feature with issue = "none". Its declared purpose is
+      use by compiler-generated calls with a restricted set of argument types.
+      Claim A uses an arbitrary downstream implementation after explicitly
+      enabling that gate. Claim B identifies a stable safe API whose actual
+      in-tree call violates the facility's stated argument restriction. Only
+      these facts are supplied. Explain the review disposition and missing
+      evidence for each, without creating code or reproductions.
+    expectations:
+      - "Agent classifies the gate and intended use before treating arbitrary downstream applicability as a finding"
+      - "Agent excludes claim A alone as evidence of an exposed stdlib defect while requiring concrete compiler/in-tree uses to be reviewed"
+      - "Agent retains claim B for contract and reachability validation despite its internal lower layer"
+      - "Agent does not treat a missing tracking issue as a blanket exemption"
+  - name: tracked_nightly_and_suppression
+    prompt: >-
+      Review this audit summary: an alloc module exposes a tracked nightly safe
+      API. Its file has ignore-tidy-undocumented-unsafe, three undocumented
+      unsafe functions, and target branches absent from the default host build.
+      Tidy and a default-host Miri run passed. The summary marks the module
+      reviewed and sound because the API is unstable and tidy accepted it.
+      Assess that conclusion using only the supplied facts.
+    expectations:
+      - "Agent does not exempt tracked nightly APIs from soundness"
+      - "Agent makes the suppression, undocumented functions, and unreviewed target branches explicit review obligations"
+      - "Agent distinguishes missing proof coverage and documentation from an established UB path"
+      - "Agent does not accept tidy or one passing model run as proof of complete review"
+  - name: allocator_contract_and_harness
+    prompt: >-
+      A supplied hypothetical unsafe allocator contract forbids its allocation
+      method from unwinding but permits returning an allocation error. A review
+      harness replaces the method with a panic and reports failure downstream.
+      The production error-handling path invokes a separate hook whose contract
+      permits unwinding. Neither path has been traced further. Privately assess
+      what these facts establish; do not implement a reproduction.
+    expectations:
+      - "Agent rejects the forbidden direct allocator panic as proof of an admissible stdlib failing path"
+      - "Agent identifies permitted error-handling unwind as a separate proof obligation rather than assuming the allocator prohibition excludes it"
+      - "Agent distinguishes injected harness evidence from actual production execution and leaves the defect unconfirmed"
+  - name: fcp_and_model_disagreement
+    prompt: >-
+      In a synthetic evidence packet, a completed applicable Rust team FCP
+      explicitly accepts proposition X as sound. A newer UCG thread is closed
+      after an informal disagreement but contains no adopted superseding
+      decision. A current interpreter rejects X; compiler conformance has not
+      been checked. Give a concise private review disposition.
+    expectations:
+      - "Agent retains the non-overridden applicable FCP as controlling the proposition"
+      - "Agent does not turn closed status, recency, or an interpreter result into a superseding decision"
+      - "Agent separates accepted semantics from current compiler implementation evidence and identifies the conformance question"
