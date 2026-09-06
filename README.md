@@ -1,55 +1,41 @@
 # Rust Project skills
 
-Skills for Rust Project participation, private review, and creative collaboration.
+A collection of [Codex skills](https://learn.chatgpt.com/docs/build-skills) for Rust Project work: reviewing standard-library changes, working through soundness questions, preparing meetings, and managing a review queue. There are also skills for editorial review and creative work.
 
-| Skill | Use it for |
+Each skill is a set of instructions and reference material that Codex uses for a particular kind of task. The Rust review skills draw on project guidance and examples of substantive reviews, with an emphasis on checking current source and explaining the evidence behind a finding.
+
+## What's included
+
+| Skill | What it helps with |
 | --- | --- |
-| [rust-libs-pr-review](rust-libs-pr-review/SKILL.md) | An independent review of a library PR: behavior, API scope, compatibility, tests, documentation, platforms, and performance. |
-| [rust-stdlib-unsafe-review](rust-stdlib-unsafe-review/SKILL.md) | Soundness proofs and safety-contract review in `core`, `alloc`, and `std`. |
-| [rust-stdlib-unsoundness-response](rust-stdlib-unsoundness-response/SKILL.md) | Assessing a concrete soundness finding and its severity, exposure, and repair tradeoffs. |
-| [rust-libs-meeting](rust-libs-meeting/SKILL.md) | Selecting FCPs worth synchronous discussion, or checking whether meeting decisions reached the people who need them. |
-| [rust-libs-review-queue](rust-libs-review-queue/SKILL.md) | Finding what needs your attention next, with rough effort and current blockers. |
-| [prose-review](prose-review/SKILL.md) | Reviewing prose for coherence, reader context, justified qualifications, and consequential editorial issues. |
-| [creative-inquiry](creative-inquiry/SKILL.md) | Exploring a task's purpose, design possibilities, and unexpected connections, then carrying it through. |
+| [rust-libs-pr-review](rust-libs-pr-review/SKILL.md) | Reviewing library PRs for correctness, API scope, compatibility, tests, documentation, and performance. |
+| [rust-stdlib-unsafe-review](rust-stdlib-unsafe-review/SKILL.md) | Reviewing unsafe code and safety contracts in `core`, `alloc`, and `std`. |
+| [rust-stdlib-unsoundness-response](rust-stdlib-unsoundness-response/SKILL.md) | Assessing a reported soundness defect, its severity and exposure, and possible repairs. |
+| [rust-libs-meeting](rust-libs-meeting/SKILL.md) | Preparing Libraries team discussions and following up on meeting decisions. |
+| [rust-libs-review-queue](rust-libs-review-queue/SKILL.md) | Finding PRs and issues that need your attention, with an estimate of the work involved. |
+| [prose-review](prose-review/SKILL.md) | Reviewing existing writing for structure, clarity, and the context its readers need. |
+| [creative-inquiry](creative-inquiry/SKILL.md) | Exploring an idea's purpose and possibilities, then developing it into concrete work. |
 
-For example:
+The review, queue, and meeting skills produce private assessments. Public writing, patches, and team decisions stay with the human doing the work. Creative inquiry also supports hands-on writing and building.
 
-- “Use $rust-libs-pr-review for an independent private pass on this PR.”
-- “Use $rust-libs-meeting to suggest FCPs for next week's meeting.”
-- “Use $rust-libs-meeting to check follow-through from the last two completed meetings.”
-- “Use $rust-libs-review-queue to find what I can unblock in a short session.”
-- “Use $prose-review to assess whether this document stands on its own for its intended readers.”
-- “Use $creative-inquiry to explore what this idea could become and build a small working version.”
+## Getting started
 
-The PR and meeting skills keep their research and detailed guidance in linked
-references. Historical examples explain the method; live PRs, decisions, bot
-receipts, and repository state determine the answer to a new task. The meeting
-workflow tracks consensus delivery: a present author or assignee need not leave
-a redundant acknowledgment comment.
+Each top-level skill directory is a complete package. Copy the skills you want into your Codex user skills directory. For example, from a checkout of this repository, install PR review and the two soundness skills with:
 
-The review, queue, and meeting workflows end in private analysis for the user.
-These skills can identify human next steps, but never offer public-ready prose, patches, publishing,
-external actions, or decisions on the team's behalf. Read-only research and
-bounded local verification support the analysis.
+```sh
+mkdir -p ~/.agents/skills
+cp -R rust-libs-pr-review rust-stdlib-unsafe-review \
+  rust-stdlib-unsoundness-response ~/.agents/skills/
+```
 
-Creative inquiry supports exploration and execution within the underlying
-task's scope. It can guide authorized building or writing, and preserves the
-private advisory boundaries when used alongside a review skill.
+You can install the other skills in the same way, or symlink their directories if you want to use this checkout directly. Keep one installation of each skill to avoid duplicate entries. See [Codex's skill documentation](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills) for discovery locations and configuration.
 
-## Local use and maintenance
+Then invoke a skill in a Codex conversation, for example:
 
-Each top-level skill directory is a complete skill package. Copy a chosen
-directory into the user skill location configured for your Codex installation,
-or symlink it there to use this checkout directly. Use one installation per
-skill name to avoid duplicate discovery. The current documented user location
-is `~/.agents/skills`; this machine also loads existing skills from
-`~/.codex/skills`. See [Codex skill discovery](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills).
+> Use $rust-libs-pr-review for an independent private review of this PR: `PR_URL`
 
-Maintain the skill packages here and synchronize installed copies after an
-update. Compare both trees first so a newer local change is not silently
-overwritten; symlinked installations follow the repository directly.
+> Use $rust-libs-meeting to check follow-through from the last two completed meetings.
 
-Validate a changed package with the installed skill-creator's
-`scripts/quick_validate.py`, then exercise a realistic request. Format validation
-does not establish review quality. Keep source examples in references and avoid
-turning one historical review decision into a universal rule.
+> Use $creative-inquiry to explore this idea and build a small working version.
+
+Provide the relevant PR, document, or project context. Code review benefits from access to a Rust checkout; meeting and queue work need access to the relevant project discussions and records.
